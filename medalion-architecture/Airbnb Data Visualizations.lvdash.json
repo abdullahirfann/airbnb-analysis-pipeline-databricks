@@ -1,0 +1,941 @@
+{
+  "datasets": [
+    {
+      "name": "efdda21c",
+      "displayName": "top_10_hosts_by_listings",
+      "queryLines": [
+        "SELECT\n",
+        "  name,\n",
+        "  listing_count\n",
+        "FROM airbnb_host_listing_counts_gold\n",
+        "ORDER BY listing_count DESC\n",
+        "LIMIT 10\n"
+      ]
+    },
+    {
+      "name": "b72f3ec4",
+      "displayName": "top_10_hosts_by_revenue",
+      "queryLines": [
+        "SELECT\n",
+        "  name,\n",
+        "  CAST(REPLACE(total_revenue, '$', '') AS DOUBLE) AS revenue\n",
+        "FROM airbnb_hosts_revenue_gold\n",
+        "ORDER BY revenue DESC\n",
+        "LIMIT 10\n"
+      ]
+    },
+    {
+      "name": "53e12a71",
+      "displayName": "top_10_hosts_by_reviews",
+      "queryLines": [
+        "SELECT\n",
+        "  name,\n",
+        "  average_rating\n",
+        "FROM airbnb_hosts_reviews_gold\n",
+        "ORDER BY average_rating DESC\n",
+        "LIMIT 10\n"
+      ]
+    },
+    {
+      "name": "ff2fb884",
+      "displayName": "airbnb_city_ratings_gold",
+      "queryLines": [
+        "SELECT\n",
+        "  country,\n",
+        "  city,\n",
+        "  COALESCE(average_rating, 0) AS average_rating\n",
+        "FROM airbnb_city_ratings_gold\n",
+        "ORDER BY average_rating DESC\n"
+      ]
+    },
+    {
+      "name": "bc5d4538",
+      "displayName": "airbnb_neighbourhood_ratings_gold",
+      "queryLines": [
+        "SELECT\n",
+        "  country,\n",
+        "  city,\n",
+        "  neighbourhood,\n",
+        "  avg_reviews\n",
+        "FROM airbnb_neighbourhood_ratings_gold\n",
+        "WHERE avg_reviews IS NOT NULL\n",
+        "ORDER BY avg_reviews DESC\n",
+        "LIMIT 20\n"
+      ]
+    },
+    {
+      "name": "bf08ba63",
+      "displayName": "airbnb_listing_skew_gold",
+      "queryLines": [
+        "SELECT\n",
+        "  host_name,\n",
+        "  listing_name,\n",
+        "  listing_review,\n",
+        "  user_reviews_avg,\n",
+        "  skew\n",
+        "FROM airbnb_listing_skew_gold\n",
+        "WHERE skew IS NOT NULL\n",
+        "ORDER BY ABS(skew) DESC\n",
+        "LIMIT 20\n"
+      ]
+    },
+    {
+      "name": "67c57081",
+      "displayName": "airbnb_reviews_gold",
+      "queryLines": [
+        "SELECT\n",
+        "  sentiment,\n",
+        "  COUNT(*) AS review_count\n",
+        "FROM airbnb_reviews_gold\n",
+        "GROUP BY sentiment\n",
+        "ORDER BY review_count DESC\n"
+      ]
+    },
+    {
+      "name": "5f7f1a2c",
+      "displayName": "airbnb_reviews_gold 1",
+      "queryLines": [
+        "SELECT\n",
+        "  category,\n",
+        "  COUNT(*) AS category_count\n",
+        "FROM (\n",
+        "  SELECT explode(review_categories) AS category\n",
+        "  FROM airbnb_reviews_gold\n",
+        ")\n",
+        "GROUP BY category\n",
+        "ORDER BY category_count DESC\n",
+        "LIMIT 10\n"
+      ]
+    },
+    {
+      "name": "36f6fddd",
+      "displayName": "revenue_vs_rating",
+      "queryLines": [
+        "SELECT\n",
+        "  l.id,\n",
+        "  l.name,\n",
+        "  l.review_scores_rating,\n",
+        "  l.estimated_revenue\n",
+        "FROM airbnb_listings_silver l\n",
+        "WHERE review_scores_rating IS NOT NULL\n",
+        "  AND estimated_revenue IS NOT NULL\n"
+      ]
+    },
+    {
+      "name": "d009df23",
+      "displayName": "reviews_vs_rating",
+      "queryLines": [
+        "SELECT\n",
+        "  reviews_per_month,\n",
+        "  review_scores_rating\n",
+        "FROM airbnb_listings_silver\n",
+        "WHERE reviews_per_month IS NOT NULL\n",
+        "  AND review_scores_rating IS NOT NULL\n"
+      ]
+    }
+  ],
+  "pages": [
+    {
+      "name": "e39e1c24",
+      "displayName": "Global Filters",
+      "layout": [
+        {
+          "widget": {
+            "name": "e0b91ad3",
+            "spec": {
+              "version": 2,
+              "widgetType": "filter-single-select",
+              "encodings": {},
+              "frame": {
+                "showTitle": true
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 0,
+            "width": 1,
+            "height": 2
+          }
+        },
+        {
+          "widget": {
+            "name": "85fe8816",
+            "spec": {
+              "version": 2,
+              "widgetType": "filter-single-select",
+              "encodings": {},
+              "frame": {
+                "showTitle": true
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 2,
+            "width": 1,
+            "height": 2
+          }
+        }
+      ],
+      "pageType": "PAGE_TYPE_GLOBAL_FILTERS"
+    },
+    {
+      "name": "3696a519",
+      "displayName": "Host Dashboard",
+      "layout": [
+        {
+          "widget": {
+            "name": "6c995596",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "efdda21c",
+                  "fields": [
+                    {
+                      "name": "name",
+                      "expression": "`name`"
+                    },
+                    {
+                      "name": "listing_count",
+                      "expression": "`listing_count`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "frame": {
+                "title": "Top 10 Hosts by Listings (Horizontal Bar)",
+                "showTitle": true
+              },
+              "widgetType": "bar",
+              "encodings": {
+                "x": {
+                  "fieldName": "listing_count",
+                  "displayName": "Listing Count",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                },
+                "y": {
+                  "fieldName": "name",
+                  "displayName": "Host Name",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                },
+                "color": {
+                  "fieldName": "name",
+                  "legend": {
+                    "hide": true
+                  },
+                  "displayName": "Host Name",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                },
+                "label": {
+                  "show": true
+                }
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 0,
+            "width": 8,
+            "height": 6
+          }
+        },
+        {
+          "widget": {
+            "name": "758f6dc7",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "b72f3ec4",
+                  "fields": [
+                    {
+                      "name": "name",
+                      "expression": "`name`"
+                    },
+                    {
+                      "name": "revenue",
+                      "expression": "`revenue`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "frame": {
+                "title": "Top 10 Hosts by Total Revenue",
+                "showTitle": true
+              },
+              "widgetType": "bar",
+              "encodings": {
+                "x": {
+                  "fieldName": "name",
+                  "displayName": "Host Name",
+                  "scale": {
+                    "type": "categorical",
+                    "sort": {
+                      "by": "y-reversed"
+                    }
+                  }
+                },
+                "y": {
+                  "fieldName": "revenue",
+                  "format": {
+                    "type": "number-currency",
+                    "currencyCode": "USD",
+                    "decimalPlaces": {
+                      "type": "exact",
+                      "places": 0
+                    },
+                    "abbreviation": "none"
+                  },
+                  "displayName": "Total Revenue",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                },
+                "color": {
+                  "fieldName": "name",
+                  "legend": {
+                    "hide": true
+                  },
+                  "displayName": "Host Name",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                },
+                "label": {
+                  "show": true
+                }
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 6,
+            "width": 6,
+            "height": 6
+          }
+        },
+        {
+          "widget": {
+            "name": "67ba6d30",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "53e12a71",
+                  "fields": [
+                    {
+                      "name": "name",
+                      "expression": "`name`"
+                    },
+                    {
+                      "name": "average_rating",
+                      "expression": "`average_rating`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "frame": {
+                "title": "Top 10 Hosts by Average Rating",
+                "showTitle": true
+              },
+              "widgetType": "bar",
+              "encodings": {
+                "x": {
+                  "fieldName": "name",
+                  "displayName": "Host Name",
+                  "scale": {
+                    "type": "categorical",
+                    "sort": {
+                      "by": "y-reversed"
+                    }
+                  }
+                },
+                "y": {
+                  "fieldName": "average_rating",
+                  "format": {
+                    "type": "number-plain",
+                    "decimalPlaces": {
+                      "type": "exact",
+                      "places": 2
+                    },
+                    "abbreviation": "none"
+                  },
+                  "displayName": "Average Rating",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                },
+                "color": {
+                  "fieldName": "name",
+                  "legend": {
+                    "hide": true
+                  },
+                  "displayName": "Host Name",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                },
+                "label": {
+                  "show": true
+                }
+              }
+            }
+          },
+          "position": {
+            "x": 6,
+            "y": 6,
+            "width": 6,
+            "height": 6
+          }
+        }
+      ],
+      "pageType": "PAGE_TYPE_CANVAS",
+      "layoutVersion": "GRID_V1"
+    },
+    {
+      "name": "59d74f23",
+      "displayName": "Geographical Dashboard",
+      "layout": [
+        {
+          "widget": {
+            "name": "a1c02f25",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "ff2fb884",
+                  "fields": [
+                    {
+                      "name": "city",
+                      "expression": "`city`"
+                    },
+                    {
+                      "name": "sum(average_rating)",
+                      "expression": "SUM(`average_rating`)"
+                    },
+                    {
+                      "name": "country",
+                      "expression": "`country`"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 1,
+              "frame": {
+                "title": "City Ratings by Country and City",
+                "showTitle": true
+              },
+              "widgetType": "choropleth-map",
+              "encodings": {
+                "extra": [
+                  {
+                    "fieldName": "city",
+                    "displayName": "City"
+                  },
+                  {
+                    "fieldName": "sum(average_rating)"
+                  }
+                ],
+                "region": {
+                  "regionType": "mapbox-v4-admin",
+                  "admin0": {
+                    "fieldName": "country",
+                    "geographicRole": "admin0-unit-code",
+                    "type": "field"
+                  }
+                }
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 0,
+            "width": 6,
+            "height": 6
+          }
+        },
+        {
+          "widget": {
+            "name": "70fda515",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "bc5d4538",
+                  "fields": [
+                    {
+                      "name": "avg_reviews",
+                      "expression": "`avg_reviews`"
+                    },
+                    {
+                      "name": "country",
+                      "expression": "`country`"
+                    },
+                    {
+                      "name": "city",
+                      "expression": "`city`"
+                    },
+                    {
+                      "name": "neighbourhood",
+                      "expression": "`neighbourhood`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "frame": {
+                "title": "Neighbourhood Comparison Heatmap",
+                "showTitle": true
+              },
+              "widgetType": "heatmap",
+              "encodings": {
+                "x": {
+                  "fieldName": "city",
+                  "displayName": "City",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                },
+                "y": {
+                  "fieldName": "neighbourhood",
+                  "displayName": "Neighbourhood",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                },
+                "color": {
+                  "fieldName": "avg_reviews",
+                  "legend": {
+                    "position": "right"
+                  },
+                  "displayName": "Average Reviews",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                },
+                "label": {
+                  "show": true
+                },
+                "extra": [
+                  {
+                    "fieldName": "country",
+                    "displayName": "Country"
+                  }
+                ]
+              }
+            }
+          },
+          "position": {
+            "x": 6,
+            "y": 0,
+            "width": 6,
+            "height": 6
+          }
+        }
+      ],
+      "pageType": "PAGE_TYPE_CANVAS",
+      "layoutVersion": "GRID_V1"
+    },
+    {
+      "name": "425cd7f8",
+      "displayName": "Performance Intel Dashboard",
+      "layout": [
+        {
+          "widget": {
+            "name": "e76cc515",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "bf08ba63",
+                  "fields": [
+                    {
+                      "name": "skew",
+                      "expression": "`skew`"
+                    },
+                    {
+                      "name": "listing_name",
+                      "expression": "`listing_name`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "frame": {
+                "title": "Top Listings with Disparity with General Host Ratings",
+                "showTitle": true
+              },
+              "widgetType": "bar",
+              "encodings": {
+                "x": {
+                  "fieldName": "skew",
+                  "displayName": "Skew",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                },
+                "y": {
+                  "fieldName": "listing_name",
+                  "displayName": "Listing Name",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                },
+                "color": {
+                  "fieldName": "skew",
+                  "legend": {
+                    "position": "right"
+                  },
+                  "displayName": "Skew",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                },
+                "label": {
+                  "show": true
+                }
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 0,
+            "width": 12,
+            "height": 6
+          }
+        }
+      ],
+      "pageType": "PAGE_TYPE_CANVAS",
+      "layoutVersion": "GRID_V1"
+    },
+    {
+      "name": "bd05aca5",
+      "displayName": "AI Intel Dashboard",
+      "layout": [
+        {
+          "widget": {
+            "name": "b2a50b0f",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "67c57081",
+                  "fields": [
+                    {
+                      "name": "review_count",
+                      "expression": "`review_count`"
+                    },
+                    {
+                      "name": "sentiment",
+                      "expression": "`sentiment`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "frame": {
+                "title": "Sentiment Distribution of Airbnb Reviews",
+                "showTitle": true
+              },
+              "widgetType": "pie",
+              "encodings": {
+                "angle": {
+                  "fieldName": "review_count",
+                  "scale": {
+                    "type": "quantitative"
+                  },
+                  "displayName": "Review Count"
+                },
+                "color": {
+                  "fieldName": "sentiment",
+                  "legend": {
+                    "position": "right"
+                  },
+                  "displayName": "Sentiment",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                },
+                "label": {
+                  "show": true
+                },
+                "extra": [
+                  {
+                    "fieldName": "sentiment",
+                    "displayName": "Sentiment"
+                  },
+                  {
+                    "fieldName": "review_count",
+                    "displayName": "Review Count"
+                  }
+                ]
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 0,
+            "width": 6,
+            "height": 6
+          }
+        },
+        {
+          "widget": {
+            "name": "4ad59915",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "5f7f1a2c",
+                  "fields": [
+                    {
+                      "name": "category",
+                      "expression": "`category`"
+                    },
+                    {
+                      "name": "category_count",
+                      "expression": "`category_count`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "frame": {
+                "title": "Most Common Review Categories (Overall)",
+                "showTitle": true
+              },
+              "widgetType": "bar",
+              "encodings": {
+                "x": {
+                  "fieldName": "category",
+                  "displayName": "Category",
+                  "scale": {
+                    "type": "categorical",
+                    "sort": {
+                      "by": "y-reversed"
+                    }
+                  }
+                },
+                "y": {
+                  "fieldName": "category_count",
+                  "displayName": "Category Count",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                },
+                "color": {
+                  "fieldName": "category",
+                  "legend": {
+                    "position": "right"
+                  },
+                  "displayName": "Category",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                },
+                "label": {
+                  "show": true
+                }
+              }
+            }
+          },
+          "position": {
+            "x": 6,
+            "y": 0,
+            "width": 6,
+            "height": 6
+          }
+        }
+      ],
+      "pageType": "PAGE_TYPE_CANVAS",
+      "layoutVersion": "GRID_V1"
+    },
+    {
+      "name": "8be903c7",
+      "displayName": "Business Dashboard",
+      "layout": [
+        {
+          "widget": {
+            "name": "602774fe",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "36f6fddd",
+                  "fields": [
+                    {
+                      "name": "review_scores_rating",
+                      "expression": "`review_scores_rating`"
+                    },
+                    {
+                      "name": "name",
+                      "expression": "`name`"
+                    },
+                    {
+                      "name": "estimated_revenue",
+                      "expression": "`estimated_revenue`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "frame": {
+                "title": "Does Rating Impact Revenue? (Scatter Plot)",
+                "showTitle": true
+              },
+              "widgetType": "scatter",
+              "encodings": {
+                "x": {
+                  "fieldName": "review_scores_rating",
+                  "displayName": "Review Score Rating",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                },
+                "y": {
+                  "fieldName": "estimated_revenue",
+                  "displayName": "Estimated Revenue",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                },
+                "color": {
+                  "fieldName": "review_scores_rating",
+                  "legend": {
+                    "position": "right"
+                  },
+                  "displayName": "Review Score Rating",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                },
+                "extra": [
+                  {
+                    "fieldName": "name",
+                    "displayName": "Listing Name"
+                  }
+                ]
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 0,
+            "width": 12,
+            "height": 8
+          }
+        },
+        {
+          "widget": {
+            "name": "2ec9c7ad",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "d009df23",
+                  "fields": [
+                    {
+                      "name": "review_scores_rating",
+                      "expression": "`review_scores_rating`"
+                    },
+                    {
+                      "name": "reviews_per_month",
+                      "expression": "`reviews_per_month`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "frame": {
+                "title": "📉 Engagement vs Quality (Scatter Plot)",
+                "showTitle": true
+              },
+              "widgetType": "scatter",
+              "encodings": {
+                "x": {
+                  "fieldName": "reviews_per_month",
+                  "displayName": "Reviews per Month",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                },
+                "y": {
+                  "fieldName": "review_scores_rating",
+                  "displayName": "Review Score Rating",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                },
+                "color": {
+                  "fieldName": "review_scores_rating",
+                  "legend": {
+                    "position": "right"
+                  },
+                  "displayName": "Review Score Rating",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                }
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 8,
+            "width": 12,
+            "height": 6
+          }
+        }
+      ],
+      "pageType": "PAGE_TYPE_CANVAS",
+      "layoutVersion": "GRID_V1"
+    }
+  ],
+  "uiSettings": {
+    "theme": {
+      "widgetHeaderAlignment": "ALIGNMENT_UNSPECIFIED"
+    },
+    "applyModeEnabled": false
+  }
+}
